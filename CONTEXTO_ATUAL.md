@@ -58,6 +58,26 @@ Este documento serve como um registro vivo (Walkthrough Geral) de todas as imple
 
 ---
 
+# 📱 Contexto Atual - Nosso Caixa Frontend (App Mobile)
+
+## 📌 10. Inicialização do App Mobile (Issue 10)
+- **Tecnologias**: React Native gerado via Expo (blank-typescript).
+- **Estilização**: Configuração do TailwindCSS integrado via `nativewind v4`, permitindo desenvolvimento ultra-rápido com classes utilitárias (`className="bg-slate-900..."`).
+
+## 📌 11. Gestor de Estado e Rede Segura (Issue 11)
+- **Store Local (Zustand)**: Implementação do `useAuthStore` que gerencia a memória do login (login, logout, hydrate).
+- **Persistência Segura**: O Token JWT e dados do usuário são gravados diretamente no cofre seguro do aparelho usando a biblioteca `expo-secure-store`.
+- **Cliente HTTP (Axios)**: Acesso padronizado ao backend local. Possui um `Interceptor` acoplado que varre a store do Zustand e anexa o token (`Authorization: Bearer <token>`) automaticamente em todas as requisições que saem do aplicativo.
+
+## 📌 12. Navegação e Telas de Autenticação (Issue 12)
+- **Roteamento Dinâmico**: Instalação do `@react-navigation/native` com divisão estrita de acessos:
+  - `AuthStack`: Abriga as rotas públicas (Login).
+  - `AppStack`: Abriga as rotas protegidas (Dashboard e afins).
+  - O maestro das rotas (`index.tsx`) escuta o Zustand em tempo real, jogando o usuário entre as Stacks como um "porteiro" sem a necessidade de comandos manuais de navegação.
+- **Telas Base**: Criação do `LoginScreen` (consumindo a API de fato) e da `HomeScreen` (com o botão de logout e exibindo dados da Store).
+
+---
+
 ## 🧪 Status Atual (Qualidade)
 O projeto conta hoje com **56 cenários de testes unitários passando**, englobando falhas de payload (Zod 400), quebras de segurança (401 e 403), não encontrados (404), caminhos de sucesso (200/201), cenários da IA e cálculos complexos de Dashboard (Aggregate Mocks).
 Toda a arquitetura MVC (Separando Controllers das Rotas) está solidificada e seguindo o TDD (Test Driven Development). A API agora está 100% documentada e pronta para o mundo real!
