@@ -50,8 +50,14 @@ Este documento serve como um registro vivo (Walkthrough Geral) de todas as imple
 - **Performance**: Ao invés de o Javascript buscar todos os dados do banco e fazer um `reduce` em memória (o que travaria o servidor em grupos com 1 milhão de transações), a soma matemática ocorre nativamente na engine do MySQL e retorna pro servidor apenas o valor somado.
 - **Resultado Consolidado**: O Dashboard retorna `total_income`, `total_expenses`, `balance` (lucro/prejuízo no mês) e a reserva de emergência `savings_amount`.
 
+## 📌 9. Documentação Oficial (Swagger/OpenAPI)
+- **Tecnologias**: `swagger-ui-express` consumindo um mega arquivo `swagger.json`.
+- **Arquitetura Limpa**: Optamos por não sujar os arquivos de código TypeScript com comentários JSDoc imensos. Ao invés disso, centralizamos toda a documentação das mais de 10 rotas no `backend/src/docs/swagger.json`.
+- **Interatividade**: A documentação não é apenas visual; ela possui o botão "Authorize" configurado. O usuário (ou o Front-end) pode fazer login, pegar o Token JWT e inseri-lo no cadeado para testar todas as rotas financeiras diretamente da tela do Swagger.
+- **Acesso**: Disponível nativamente na rota `GET /api-docs`.
+
 ---
 
 ## 🧪 Status Atual (Qualidade)
 O projeto conta hoje com **56 cenários de testes unitários passando**, englobando falhas de payload (Zod 400), quebras de segurança (401 e 403), não encontrados (404), caminhos de sucesso (200/201), cenários da IA e cálculos complexos de Dashboard (Aggregate Mocks).
-Toda a arquitetura MVC (Separando Controllers das Rotas) está solidificada e seguindo o TDD (Test Driven Development).
+Toda a arquitetura MVC (Separando Controllers das Rotas) está solidificada e seguindo o TDD (Test Driven Development). A API agora está 100% documentada e pronta para o mundo real!

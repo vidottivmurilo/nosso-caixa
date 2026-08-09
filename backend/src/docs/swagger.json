@@ -1,0 +1,397 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Nosso Caixa",
+        "version": "1.0.0",
+        "description": "Documentação Oficial da API do Nosso Caixa - Gestão Financeira Inteligente",
+        "contact": {
+            "name": "Murilo Vidotti",
+            "email": "murilo@example.com"
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3000",
+            "description": "Servidor Local de Desenvolvimento"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "schemas": {
+            "Error": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "paths": {
+        "/auth/register": {
+            "post": {
+                "summary": "Registrar um novo usuário",
+                "tags": ["Autenticação"],
+                "security": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string", "example": "João da Silva" },
+                                    "email": { "type": "string", "example": "joao@example.com" },
+                                    "password": { "type": "string", "example": "senha123" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário criado com sucesso"
+                    },
+                    "400": {
+                        "description": "Erro de validação ou usuário já existente"
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "summary": "Login do usuário",
+                "tags": ["Autenticação"],
+                "security": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": { "type": "string", "example": "joao@example.com" },
+                                    "password": { "type": "string", "example": "senha123" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "token": { "type": "string" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciais inválidas"
+                    }
+                }
+            }
+        },
+        "/groups": {
+            "post": {
+                "summary": "Criar um novo grupo",
+                "tags": ["Grupos"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string", "example": "Viagem para a Praia" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": { "description": "Grupo criado com sucesso" }
+                }
+            },
+            "get": {
+                "summary": "Listar os grupos do usuário",
+                "tags": ["Grupos"],
+                "responses": {
+                    "200": { "description": "Lista de grupos retornada" }
+                }
+            }
+        },
+        "/groups/{groupId}/add-member": {
+            "post": {
+                "summary": "Convidar um membro para o grupo",
+                "tags": ["Grupos"],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "groupId",
+                        "required": true,
+                        "schema": { "type": "string", "format": "uuid" }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": { "type": "string", "example": "maria@example.com" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": { "description": "Membro adicionado com sucesso" },
+                    "403": { "description": "Você não é o dono do grupo" }
+                }
+            }
+        },
+        "/transactions": {
+            "post": {
+                "summary": "Registrar nova transação simples",
+                "tags": ["Transações"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "group_id": { "type": "string", "format": "uuid" },
+                                    "category_id": { "type": "string", "format": "uuid" },
+                                    "amount": { "type": "number", "example": 100 },
+                                    "type": { "type": "string", "enum": ["INCOME", "EXPENSE"] },
+                                    "description": { "type": "string", "example": "Compra no mercado" },
+                                    "date": { "type": "string", "format": "date-time" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": { "description": "Transação registrada" }
+                }
+            },
+            "get": {
+                "summary": "Listar transações de um grupo",
+                "tags": ["Transações"],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "groupId",
+                        "required": true,
+                        "schema": { "type": "string", "format": "uuid" }
+                    }
+                ],
+                "responses": {
+                    "200": { "description": "Lista de transações retornada" }
+                }
+            }
+        },
+        "/installments": {
+            "post": {
+                "summary": "Registrar parcelamento (N transações)",
+                "tags": ["Parcelamentos"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "group_id": { "type": "string", "format": "uuid" },
+                                    "category_id": { "type": "string", "format": "uuid" },
+                                    "total_amount": { "type": "number", "example": 1000 },
+                                    "installments_count": { "type": "integer", "example": 10 },
+                                    "start_date": { "type": "string", "format": "date-time" },
+                                    "description": { "type": "string", "example": "Geladeira nova" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": { "description": "Parcelamento registrado com sucesso" }
+                }
+            }
+        },
+        "/fixed-expenses": {
+            "post": {
+                "summary": "Cadastrar despesa fixa mensal",
+                "tags": ["Despesas Fixas"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "group_id": { "type": "string", "format": "uuid" },
+                                    "category_id": { "type": "string", "format": "uuid" },
+                                    "amount": { "type": "number", "example": 150 },
+                                    "description": { "type": "string", "example": "Internet" },
+                                    "day_of_month": { "type": "integer", "example": 10 }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": { "description": "Despesa Fixa Cadastrada" }
+                }
+            }
+        },
+        "/fixed-expenses/group/{groupId}/generate-month": {
+            "post": {
+                "summary": "Acionar geração de despesas fixas para o mês corrente",
+                "tags": ["Despesas Fixas"],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "groupId",
+                        "required": true,
+                        "schema": { "type": "string", "format": "uuid" }
+                    }
+                ],
+                "responses": {
+                    "200": { "description": "Contas geradas ou ignoradas (se já existirem)" }
+                }
+            }
+        },
+        "/savings/group/{groupId}": {
+            "put": {
+                "summary": "Atualizar valor total guardado na Caixinha",
+                "tags": ["Metas e Caixinha"],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "groupId",
+                        "required": true,
+                        "schema": { "type": "string", "format": "uuid" }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "amount": { "type": "number", "example": 5000 }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": { "description": "Caixinha atualizada (Upsert)" }
+                }
+            },
+            "get": {
+                "summary": "Visualizar valor da Caixinha",
+                "tags": ["Metas e Caixinha"],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "groupId",
+                        "required": true,
+                        "schema": { "type": "string", "format": "uuid" }
+                    }
+                ],
+                "responses": {
+                    "200": { "description": "Retorna o valor guardado" }
+                }
+            }
+        },
+        "/dashboard/group/{groupId}/summary": {
+            "get": {
+                "summary": "Obter Dashboard consolidado",
+                "tags": ["Dashboard"],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "groupId",
+                        "required": true,
+                        "schema": { "type": "string", "format": "uuid" }
+                    },
+                    {
+                        "in": "query",
+                        "name": "month",
+                        "required": true,
+                        "schema": { "type": "string", "example": "8" }
+                    },
+                    {
+                        "in": "query",
+                        "name": "year",
+                        "required": true,
+                        "schema": { "type": "string", "example": "2026" }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JSON agregado com receitas, despesas, balanço e guardado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "total_income": { "type": "number" },
+                                        "total_expenses": { "type": "number" },
+                                        "balance": { "type": "number" },
+                                        "savings_amount": { "type": "number" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ai/parse-transaction": {
+            "post": {
+                "summary": "IA Inteligente - Criar transação por texto natural",
+                "tags": ["Inteligência Artificial (Gemini)"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "text": { "type": "string", "example": "Gastei 50 no Mcdonalds ontem" },
+                                    "group_id": { "type": "string", "format": "uuid" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": { "description": "Transação (Simples ou Parcelada) interpretada e criada no banco" }
+                }
+            }
+        }
+    }
+}
