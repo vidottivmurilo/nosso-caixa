@@ -14,6 +14,7 @@ import {
   type Group,
   type DashboardSummary,
 } from '../services/dashboardService';
+import { UpdateSavingsModal } from '../components/UpdateSavingsModal';
 
 // --- Helpers ---
 
@@ -70,6 +71,7 @@ export function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   // --- Busca inicial: pega o primeiro grupo do usuário ---
   useEffect(() => {
@@ -263,13 +265,35 @@ export function HomeScreen() {
               colorClass={summary.balance >= 0 ? 'text-emerald-400' : 'text-red-400'}
             />
 
-            <FinanceCard
-              icon="🏦"
-              label="Caixinha (Reserva)"
-              value={summary.savings_amount}
-              colorClass="text-sky-400"
-            />
+            <View className="flex-row gap-4 mb-8">
+              <TouchableOpacity 
+                className="flex-1 bg-emerald-500/20 p-4 rounded-2xl border border-emerald-500/30 shadow-lg shadow-emerald-500/10 active:bg-emerald-500/30"
+                onPress={() => setModalVisible(true)}
+              >
+                <Text className="text-emerald-300 font-semibold mb-1">🏦 Caixinha</Text>
+                <Text className="text-emerald-400 font-bold text-xl">
+                  {formatBRL(summary.savings_amount)}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </>
+        )}
+
+        {group && summary && (
+          <UpdateSavingsModal
+            visible={modalVisible}
+            groupId={group.id}
+            currentAmount={summary.savings_amount}
+            onClose={() => setModalVisible(false)}
+            onSuccess={(newAmount) => {
+              // Atualiza o valor localmente para refletir imediatamente sem precisar buscar do backend
+              setSummary({
+                ...summary,
+                savings_amount: newAmount
+              });
+              setModalVisible(false);
+            }}
+          />
         )}
       </ScrollView>
     </View>

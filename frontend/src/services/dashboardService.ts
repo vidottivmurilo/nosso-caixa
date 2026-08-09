@@ -42,3 +42,11 @@ export async function fetchDashboardSummary(
   );
   return response.data;
 }
+
+/**
+ * Atualiza o valor da caixinha (Reserva de Emergência)
+ * Endpoint: PUT /savings/group/:groupId
+ */
+export async function updateSavings(groupId: string, amount: number): Promise<void> {
+  await api.put(`/savings/group/${groupId}`, { amount });
+}
