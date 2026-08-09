@@ -48,10 +48,10 @@ O JSON deve seguir EXATAMENTE esta estrutura:
 
             // 4. Inicializa o cliente do Gemini
             // Em testes, isso será mockado. Em produção, passamos o objeto (mesmo que vazio para usar process.env default, ou explicito).
-            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-            
+            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+
             let aiResponseText = "";
-            
+
             try {
                 const response = await ai.models.generateContent({
                     model: 'gemini-2.5-flash-lite',
