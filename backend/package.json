@@ -31,5 +31,8 @@
     "typescript": "^7.0.2",
     "vitest": "^4.1.10",
     "vitest-mock-extended": "^5.1.1"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

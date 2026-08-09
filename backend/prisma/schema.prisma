@@ -14,6 +14,7 @@ model User {
   created_at    DateTime @default(now())
 
   userGroups    UserGroup[]
+  transactions  Transaction[]
 
   @@map("users")
 }
@@ -24,6 +25,7 @@ model Group {
   created_at DateTime @default(now())
   
   users      UserGroup[]
+  transactions Transaction[]
 
   @@map("groups")
 }
@@ -39,4 +41,35 @@ model UserGroup {
   group    Group  @relation(fields: [group_id], references: [id])
 
   @@map("user_groups")
+}
+
+model Category {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  icon       String?  // Ex: "home", "food", "car"
+  color      String?  // Ex: "#FF0000"
+  created_at DateTime @default(now())
+
+  transactions Transaction[]
+
+  @@map("categories")
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  group_id    String
+  user_id     String   
+  category_id String
+  amount      Float
+  type        String   // "INCOME" ou "EXPENSE"
+  description String
+  date        DateTime // Data em que a transação ocorreu
+  is_paid     Boolean  @default(true) // Controle de pendência
+  created_at  DateTime @default(now())
+
+  group    Group    @relation(fields: [group_id], references: [id])
+  user     User     @relation(fields: [user_id], references: [id])
+  category Category @relation(fields: [category_id], references: [id])
+
+  @@map("transactions")
 }
