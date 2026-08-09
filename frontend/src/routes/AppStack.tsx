@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '../screens/HomeScreen';
 import { TransactionsScreen } from '../screens/TransactionsScreen';
 import { FixedExpensesScreen } from '../screens/FixedExpensesScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -45,6 +46,15 @@ export function AppStack() {
         options={{
           tabBarIcon: () => null,
           tabBarLabel: 'Assinaturas',
+          tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold' }
+        }}
+      />
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: () => null,
+          tabBarLabel: 'Meu Perfil',
           tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold' }
         }}
       />
