@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
@@ -12,13 +13,14 @@ import { fixedExpenseRoutes } from './routes/fixedExpenses.routes.js';
 import { aiRoutes } from './routes/ai.routes.js';
 import { savingsRoutes } from './routes/savings.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
-
+import { categoryRoutes } from './routes/categories.routes.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 3000;
 
+app.use(cors());
 app.use(express.json());
 
 // Documentação Swagger
@@ -33,6 +35,7 @@ app.use('/fixed-expenses', fixedExpenseRoutes);
 app.use('/ai', aiRoutes);
 app.use('/savings', savingsRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/categories', categoryRoutes);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
