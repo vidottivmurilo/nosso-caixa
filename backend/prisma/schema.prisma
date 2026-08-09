@@ -28,6 +28,7 @@ model Group {
   transactions   Transaction[]
   installments   Installment[]
   fixed_expenses FixedExpense[]
+  savings        Savings?
 
   @@map("groups")
 }
@@ -110,4 +111,15 @@ model Transaction {
   fixedExpense FixedExpense? @relation(fields: [fixed_expense_id], references: [id])
 
   @@map("transactions")
+}
+
+model Savings {
+  id          String   @id @default(uuid())
+  group_id    String   @unique
+  amount      Float
+  updated_at  DateTime @updatedAt
+
+  group       Group    @relation(fields: [group_id], references: [id])
+
+  @@map("savings")
 }

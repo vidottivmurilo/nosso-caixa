@@ -43,8 +43,15 @@ Este documento serve como um registro vivo (Walkthrough Geral) de todas as imple
 - **Roteamento Inteligente**: O endpoint `/ai/parse-transaction` lê o objeto devolvido pela IA e identifica automaticamente se deve acionar o motor de "Transação Simples" ou o motor atômico de "Parcelamentos" caso o usuário mencione parcelas.
 - **Testes com Mocks Globais**: O `GoogleGenAI` foi completamente mockado no arquivo de testes usando `vi.hoisted`, garantindo que a suíte passe em milissegundos sem gastar créditos de API.
 
+## 📌 8. Dashboard e Metas (Issue 8)
+- **Banco de Dados**: Criação da tabela `Savings` com ligação `1:1` ao Grupo para controlar o valor total investido/guardado.
+- **Lógica de Metas**: Endpoint `PUT /savings/group/:groupId` que realiza um `Upsert` inteligente (cria se a caixinha não existir, e apenas atualiza o valor se já existir), prevenindo duplicidade de registros.
+- **Agregador (Dashboard)**: Endpoint vital `GET /dashboard/group/:groupId/summary?month=X&year=Y` que utiliza `prisma.transaction.aggregate({ _sum })` para buscar todas as receitas e despesas exclusivamente daquele mês solicitado.
+- **Performance**: Ao invés de o Javascript buscar todos os dados do banco e fazer um `reduce` em memória (o que travaria o servidor em grupos com 1 milhão de transações), a soma matemática ocorre nativamente na engine do MySQL e retorna pro servidor apenas o valor somado.
+- **Resultado Consolidado**: O Dashboard retorna `total_income`, `total_expenses`, `balance` (lucro/prejuízo no mês) e a reserva de emergência `savings_amount`.
+
 ---
 
 ## 🧪 Status Atual (Qualidade)
-O projeto conta hoje com **51 cenários de testes unitários passando**, englobando falhas de payload (Zod 400), quebras de segurança (401 e 403), não encontrados (404), caminhos de sucesso (200/201) e cenários da IA (incluindo IA inventando dado errado).
+O projeto conta hoje com **56 cenários de testes unitários passando**, englobando falhas de payload (Zod 400), quebras de segurança (401 e 403), não encontrados (404), caminhos de sucesso (200/201), cenários da IA e cálculos complexos de Dashboard (Aggregate Mocks).
 Toda a arquitetura MVC (Separando Controllers das Rotas) está solidificada e seguindo o TDD (Test Driven Development).
