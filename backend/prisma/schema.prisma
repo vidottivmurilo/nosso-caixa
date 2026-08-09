@@ -24,8 +24,9 @@ model Group {
   name       String
   created_at DateTime @default(now())
   
-  users      UserGroup[]
+  users        UserGroup[]
   transactions Transaction[]
+  installments Installment[]
 
   @@map("groups")
 }
@@ -55,21 +56,37 @@ model Category {
   @@map("categories")
 }
 
-model Transaction {
-  id          String   @id @default(uuid())
-  group_id    String
-  user_id     String   
-  category_id String
-  amount      Float
-  type        String   // "INCOME" ou "EXPENSE"
-  description String
-  date        DateTime // Data em que a transação ocorreu
-  is_paid     Boolean  @default(true) // Controle de pendência
-  created_at  DateTime @default(now())
+model Installment {
+  id                 String   @id @default(uuid())
+  group_id           String
+  total_amount       Float
+  installments_count Int
+  description        String
+  created_at         DateTime @default(now())
 
-  group    Group    @relation(fields: [group_id], references: [id])
-  user     User     @relation(fields: [user_id], references: [id])
-  category Category @relation(fields: [category_id], references: [id])
+  group        Group         @relation(fields: [group_id], references: [id])
+  transactions Transaction[]
+
+  @@map("installments")
+}
+
+model Transaction {
+  id             String   @id @default(uuid())
+  group_id       String
+  user_id        String   
+  category_id    String
+  installment_id String?
+  amount         Float
+  type           String   // "INCOME" ou "EXPENSE"
+  description    String
+  date           DateTime // Data em que a transação ocorreu
+  is_paid        Boolean  @default(true) // Controle de pendência
+  created_at     DateTime @default(now())
+
+  group       Group        @relation(fields: [group_id], references: [id])
+  user        User         @relation(fields: [user_id], references: [id])
+  category    Category     @relation(fields: [category_id], references: [id])
+  installment Installment? @relation(fields: [installment_id], references: [id])
 
   @@map("transactions")
 }
