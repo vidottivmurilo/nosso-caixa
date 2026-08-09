@@ -3,6 +3,7 @@ import { authRoutes } from './routes/auth.routes.js';
 import { groupRoutes } from './routes/groups.routes.js';
 import { transactionRoutes } from './routes/transactions.routes.js';
 import { installmentRoutes } from './routes/installments.routes.js';
+import { fixedExpenseRoutes } from './routes/fixedExpenses.routes.js';
 
 const app = express();
 const port = 3000;
@@ -13,6 +14,7 @@ app.use('/auth', authRoutes);
 app.use('/groups', groupRoutes);
 app.use('/transactions', transactionRoutes);
 app.use('/installments', installmentRoutes);
+app.use('/fixed-expenses', fixedExpenseRoutes);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
