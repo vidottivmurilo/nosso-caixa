@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '../screens/HomeScreen';
 import { TransactionsScreen } from '../screens/TransactionsScreen';
+import { FixedExpensesScreen } from '../screens/FixedExpensesScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -35,6 +36,15 @@ export function AppStack() {
         options={{
           tabBarIcon: () => null,
           tabBarLabel: 'Transações',
+          tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold' }
+        }}
+      />
+      <Tab.Screen 
+        name="FixedExpenses" 
+        component={FixedExpensesScreen}
+        options={{
+          tabBarIcon: () => null,
+          tabBarLabel: 'Assinaturas',
           tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold' }
         }}
       />
