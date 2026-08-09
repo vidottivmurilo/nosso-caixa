@@ -12,5 +12,31 @@ model User {
   email         String   @unique
   password_hash String
   created_at    DateTime @default(now())
+
+  userGroups    UserGroup[]
+
   @@map("users")
+}
+
+model Group {
+  id         String   @id @default(uuid())
+  name       String
+  created_at DateTime @default(now())
+  
+  users      UserGroup[]
+
+  @@map("groups")
+}
+
+model UserGroup {
+  id       String @id @default(uuid())
+  user_id  String
+  group_id String
+  role     String @default("MEMBER") // "OWNER" or "MEMBER"
+  status   String @default("PENDING") // "PENDING" or "ACCEPTED"
+
+  user     User   @relation(fields: [user_id], references: [id])
+  group    Group  @relation(fields: [group_id], references: [id])
+
+  @@map("user_groups")
 }
