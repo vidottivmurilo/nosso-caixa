@@ -78,8 +78,23 @@ export class TransactionController {
                 return res.status(403).json({ error: 'Sem permissão para ver transações deste grupo' });
             }
 
+            const month = req.query.month ? parseInt(req.query.month as string) : null;
+            const year = req.query.year ? parseInt(req.query.year as string) : null;
+
+            const whereClause: any = { group_id: groupId };
+            
+            if (month && year) {
+                const startDate = new Date(year, month - 1, 1);
+                const endDate = new Date(year, month, 1);
+                
+                whereClause.date = {
+                    gte: startDate,
+                    lt: endDate
+                };
+            }
+
             const transactions = await prisma.transaction.findMany({
-                where: { group_id: groupId },
+                where: whereClause,
                 include: { category: true, user: { select: { id: true, name: true } } },
                 orderBy: { date: 'desc' }
             });
