@@ -32,6 +32,10 @@ export class AiController {
             const categoryNames = categories.map(c => c.name).join(', ');
 
             // 3. Monta o Prompt para a IA
+            const today = new Date();
+            // Pega a data baseada no fuso local do servidor para evitar que "hoje" seja amanhã no UTC
+            const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+            
             const systemPrompt = `Você é um assistente financeiro especialista em extrair dados de textos naturais.
 O usuário vai enviar uma frase relatando um gasto ou receita. Você DEVE analisar a frase e retornar ESTRITAMENTE um JSON estruturado. NÃO inclua nenhuma formatação markdown (como \`\`\`json), responda apenas com as chaves e valores.
 
@@ -43,7 +47,7 @@ O JSON deve seguir EXATAMENTE esta estrutura:
   "category": Escolha UMA das categorias exatas da lista a seguir, a que melhor se encaixar: [${categoryNames}] (string),
   "is_installment": true se a pessoa falar que parcelou/dividiu, false caso contrário (boolean),
   "installments_count": Quantidade de parcelas se for parcelado, ou null se não for (number | null),
-  "date": "Data que a transação ocorreu ou a primeira parcela vence, no formato YYYY-MM-DDT00:00:00Z. Se não for informada, use a data de hoje" (string)
+  "date": "Data que a transação ocorreu ou a primeira parcela vence, no formato YYYY-MM-DDT12:00:00Z (utilize sempre o horário 12:00:00Z para evitar problemas de fuso horário). Se não for informada, use a data de hoje (${todayStr}T12:00:00Z)" (string)
 }`;
 
             // 4. Inicializa o cliente do Gemini
@@ -54,7 +58,7 @@ O JSON deve seguir EXATAMENTE esta estrutura:
 
             try {
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
+                    model: 'gemini-3.5-flash',
                     contents: data.text,
                     config: {
                         systemInstruction: systemPrompt,
