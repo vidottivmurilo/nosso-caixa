@@ -22,7 +22,6 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
     "@types/react": "~19.2.2",
     "babel-preset-expo": "^57.0.6",
     "postcss": "^8.5.26",
