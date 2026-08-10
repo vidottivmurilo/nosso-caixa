@@ -54,7 +54,7 @@ O JSON deve seguir EXATAMENTE esta estrutura:
 
             try {
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash-lite',
+                    model: 'gemini-2.5-flash',
                     contents: data.text,
                     config: {
                         systemInstruction: systemPrompt,
