@@ -12,6 +12,7 @@ async function main() {
         { name: 'Educação', icon: 'book', color: '#3498DB' },
         { name: 'Salário', icon: 'money-bill-wave', color: '#2ECC71' }, // Categoria comum para Receita
         { name: 'Rendimento', icon: 'chart-line', color: '#1ABC9C' },   // Categoria comum para Receita
+        { name: 'Pets', icon: 'paw', color: '#E67E22' },
     ];
 
     for (const category of defaultCategories) {
