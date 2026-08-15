@@ -5,5 +5,6 @@ const authRoutes = Router();
 
 authRoutes.post('/register', AuthController.register);
 authRoutes.post('/login', AuthController.login);
+authRoutes.post('/verify-email', AuthController.verifyEmail);
 
 export { authRoutes };

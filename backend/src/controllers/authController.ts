@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
+import { EmailService } from '../services/emailService.js';
 
 export class AuthController {
 
@@ -34,8 +35,20 @@ export class AuthController {
                 }
             });
 
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            await prisma.userToken.create({
+                data: {
+                    token: code,
+                    user_id: user.id,
+                    expires_at: new Date(Date.now() + 15 * 60 * 1000)
+                }
+            });
+
+            await EmailService.sendVerificationEmail(user.email, code);
+
             return res.status(201).json({
-                message: 'Usuário criado com sucesso!',
+                message: 'Usuário criado com sucesso. Verifique seu e-mail!',
                 user: { id: user.id, name: user.name, email: user.email }
             });
 
@@ -57,6 +70,10 @@ export class AuthController {
                 return res.status(401).json({ error: 'E-mail incorreto' });
             }
 
+            if (!user.is_email_verified) {
+                return res.status(403).json({ error: 'Sua conta ainda não foi ativada. Verifique seu e-mail.' });
+            }
+
             const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
             if (!isValidPassword) {
@@ -76,6 +93,52 @@ export class AuthController {
         } catch (error) {
             console.error("ERRO NO LOGIN:", error);
             return res.status(500).json({ error: 'Erro interno no servidor' });
+        }
+    }
+
+    static async verifyEmail(req: Request, res: Response): Promise<any> {
+        try {
+            const verifySchema = z.object({
+                email: z.string().email(),
+                code: z.string().length(6)
+            });
+
+            const data = verifySchema.parse(req.body);
+
+            const user = await prisma.user.findUnique({
+                where: { email: data.email }
+            });
+
+            if (!user) {
+                return res.status(400).json({ error: 'Usuário não encontrado' });
+            }
+
+            const tokenRecord = await prisma.userToken.findFirst({
+                where: {
+                    user_id: user.id,
+                    token: data.code,
+                    expires_at: { gt: new Date() } // Somente se não expirou
+                }
+            });
+
+            if (!tokenRecord) {
+                return res.status(400).json({ error: 'Código inválido ou expirado' });
+            }
+
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { is_email_verified: true }
+            });
+
+            await prisma.userToken.delete({
+                where: { id: tokenRecord.id }
+            });
+
+            return res.status(200).json({ message: 'E-mail verificado com sucesso!' });
+
+        } catch (error: any) {
+            console.error("ERRO NA VERIFICAÇÃO:", error);
+            return res.status(400).json({ error: error.issues || 'Erro ao verificar e-mail' });
         }
     }
 }

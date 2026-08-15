@@ -6,7 +6,7 @@ import { useAuthStore } from '../store/authStore';
  * 'localhost' aponta para o próprio dispositivo móvel. 
  * Portanto, usamos o IP da sua máquina na rede Wi-Fi.
  */
-const API_URL = 'http://192.168.15.4:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://nosso-caixa-backend.onrender.com';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -21,11 +21,11 @@ api.interceptors.request.use(
   (config) => {
     // Lendo do estado sem precisar de Hooks do React
     const token = useAuthStore.getState().token;
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     return config;
   },
   (error) => {
