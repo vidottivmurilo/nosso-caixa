@@ -10,7 +10,8 @@ const adapter = new PrismaMariaDb({
     user: dbUrl.username,
     password: decodeURIComponent(dbUrl.password),
     database: dbUrl.pathname.replace('/', ''),
-    allowPublicKeyRetrieval: true
+    allowPublicKeyRetrieval: true,
+    ssl: { rejectUnauthorized: true }
 });
 
 export const prisma = new PrismaClient({ adapter });
