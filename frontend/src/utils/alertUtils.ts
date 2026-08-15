@@ -2,13 +2,21 @@ import { Alert, Platform } from 'react-native';
 
 /**
  * Exibe um alerta simples (informativo) que funciona tanto na Web quanto no celular.
- * Na Web, usa window.alert(). No celular, usa Alert.alert().
+ * Aceita botões customizados (no celular) para navegação automática.
  */
-export function crossAlert(title: string, message: string) {
+export function crossAlert(title: string, message: string, buttons?: any[]) {
   if (Platform.OS === 'web') {
     window.alert(`${title}\n${message}`);
+    
+    // Simula o clique no botão principal caso exista para que a navegação funcione na Web também
+    if (buttons && buttons.length > 0) {
+      const mainButton = buttons.find(b => b.style !== 'cancel') || buttons[0];
+      if (mainButton && mainButton.onPress) {
+        mainButton.onPress();
+      }
+    }
   } else {
-    Alert.alert(title, message);
+    Alert.alert(title, message, buttons);
   }
 }
 
