@@ -88,10 +88,16 @@ export function LoginScreen() {
             value={password}
             onChangeText={setPassword}
           />
+          <TouchableOpacity 
+            className="mt-2 self-end"
+            onPress={() => navigation.navigate('ForgotPassword')}
+          >
+            <Text className="text-emerald-400 font-medium text-sm">Esqueci minha senha</Text>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity 
-          className="w-full bg-emerald-500 py-4 rounded-lg items-center mt-8 active:bg-emerald-600"
+          className="w-full bg-emerald-500 py-4 rounded-lg items-center mt-6 active:bg-emerald-600"
           onPress={handleLogin}
           disabled={loading}
         >

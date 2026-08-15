@@ -183,4 +183,98 @@ export class AuthController {
             return res.status(500).json({ error: 'Erro interno ao reenviar o código' });
         }
     }
+
+    static async forgotPassword(req: Request, res: Response): Promise<any> {
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                return res.status(400).json({ error: 'E-mail é obrigatório' });
+            }
+
+            const user = await prisma.user.findUnique({ where: { email } });
+
+            if (!user) {
+                // Por segurança, retornamos sucesso mesmo se não existir
+                return res.status(200).json({ message: 'Se o e-mail existir, você receberá um código.' });
+            }
+
+            // Deleta tokens antigos
+            await prisma.userToken.deleteMany({
+                where: { user_id: user.id }
+            });
+
+            // Gera e salva novo token de 6 dígitos
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            await prisma.userToken.create({
+                data: {
+                    token: code,
+                    user_id: user.id,
+                    expires_at: new Date(Date.now() + 15 * 60 * 1000)
+                }
+            });
+
+            // Envia e-mail de recuperação
+            await EmailService.sendPasswordResetEmail(user.email, code);
+
+            return res.status(200).json({ message: 'Se o e-mail existir, você receberá um código.' });
+
+        } catch (error) {
+            console.error("ERRO NO FORGOT PASSWORD:", error);
+            return res.status(500).json({ error: 'Erro interno no servidor' });
+        }
+    }
+
+    static async resetPassword(req: Request, res: Response): Promise<any> {
+        try {
+            const resetSchema = z.object({
+                email: z.string().email(),
+                code: z.string().length(6),
+                newPassword: z.string().min(6, "A nova senha deve ter no mínimo 6 caracteres")
+            });
+
+            const data = resetSchema.parse(req.body);
+
+            const user = await prisma.user.findUnique({
+                where: { email: data.email }
+            });
+
+            if (!user) {
+                return res.status(400).json({ error: 'Usuário não encontrado' });
+            }
+
+            const tokenRecord = await prisma.userToken.findFirst({
+                where: {
+                    user_id: user.id,
+                    token: data.code,
+                    expires_at: { gt: new Date() } // Token ainda não expirou
+                }
+            });
+
+            if (!tokenRecord) {
+                return res.status(400).json({ error: 'Código inválido ou expirado' });
+            }
+
+            // Hash da nova senha
+            const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+
+            // Atualiza usuário
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { password_hash: hashedPassword }
+            });
+
+            // Deleta token
+            await prisma.userToken.delete({
+                where: { id: tokenRecord.id }
+            });
+
+            return res.status(200).json({ message: 'Senha redefinida com sucesso!' });
+
+        } catch (error: any) {
+            console.error("ERRO NO RESET PASSWORD:", error);
+            return res.status(400).json({ error: error.issues || 'Erro ao redefinir a senha' });
+        }
+    }
 }
