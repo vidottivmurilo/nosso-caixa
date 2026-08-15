@@ -9,8 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
 } from 'react-native';
+import { crossAlert } from '../utils/alertUtils';
 import { parseTransactionWithAi } from '../services/aiService';
 import { createTransaction, createInstallment, fetchCategories, type Category } from '../services/transactionService';
 
@@ -73,10 +73,10 @@ export function NewTransactionModal({ visible, groupId, onClose, onSuccess }: Pr
       setLoading(true);
       await parseTransactionWithAi(aiPrompt, groupId);
       // Se a IA processou e já salvou no backend (como vimos no controller)
-      Alert.alert('Sucesso', 'Transação registrada com Inteligência Artificial!');
+      crossAlert('Sucesso', 'Transação registrada com Inteligência Artificial!');
       onSuccess();
     } catch (err: any) {
-      Alert.alert('Erro', err.response?.data?.error || 'A Inteligência Artificial não conseguiu entender sua frase.');
+      crossAlert('Erro', err.response?.data?.error || 'A Inteligência Artificial não conseguiu entender sua frase.');
     } finally {
       setLoading(false);
     }
@@ -85,13 +85,13 @@ export function NewTransactionModal({ visible, groupId, onClose, onSuccess }: Pr
   // --- Envio Manual ---
   async function handleManualSubmit() {
     if (!description || !amount || !categoryId || !date) {
-      Alert.alert('Atenção', 'Preencha todos os campos obrigatórios.');
+      crossAlert('Atenção', 'Preencha todos os campos obrigatórios.');
       return;
     }
 
     const numericAmount = parseFloat(amount.replace(',', '.'));
     if (isNaN(numericAmount) || numericAmount <= 0) {
-      Alert.alert('Atenção', 'Valor inválido.');
+      crossAlert('Atenção', 'Valor inválido.');
       return;
     }
 
@@ -102,7 +102,7 @@ export function NewTransactionModal({ visible, groupId, onClose, onSuccess }: Pr
       if (isInstallment) {
         const count = parseInt(installmentsCount, 10);
         if (isNaN(count) || count < 2) {
-          Alert.alert('Atenção', 'Número de parcelas inválido.');
+          crossAlert('Atenção', 'Número de parcelas inválido.');
           setLoading(false);
           return;
         }
@@ -125,10 +125,10 @@ export function NewTransactionModal({ visible, groupId, onClose, onSuccess }: Pr
         });
       }
 
-      Alert.alert('Sucesso', 'Transação registrada com sucesso!');
+      crossAlert('Sucesso', 'Transação registrada com sucesso!');
       onSuccess();
     } catch (err: any) {
-      Alert.alert('Erro', err.response?.data?.error || 'Erro ao salvar transação.');
+      crossAlert('Erro', err.response?.data?.error || 'Erro ao salvar transação.');
     } finally {
       setLoading(false);
     }

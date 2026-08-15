@@ -148,8 +148,12 @@ export class GroupController {
             });
 
             const formattedInvites = myInvites.map(ug => ({
-                group_id: ug.group.id,
-                group_name: ug.group.name
+                id: ug.id,
+                status: ug.status,
+                group: {
+                    id: ug.group.id,
+                    name: ug.group.name
+                }
             }));
 
             return res.status(200).json(formattedInvites);

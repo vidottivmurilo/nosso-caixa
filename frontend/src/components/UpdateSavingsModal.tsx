@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
+import { crossAlert } from '../utils/alertUtils';
 import { updateSavings } from '../services/dashboardService';
 
 interface Props {
@@ -33,17 +33,17 @@ export function UpdateSavingsModal({ visible, groupId, currentAmount, onClose, o
   async function handleSave() {
     const numericAmount = parseFloat(amount.replace(',', '.'));
     if (isNaN(numericAmount) || numericAmount < 0) {
-      Alert.alert('Atenção', 'Valor inválido.');
+      crossAlert('Atenção', 'Valor inválido.');
       return;
     }
 
     try {
       setLoading(true);
       await updateSavings(groupId, numericAmount);
-      Alert.alert('Sucesso', 'Valor da Caixinha atualizado!');
+      crossAlert('Sucesso', 'Valor da Caixinha atualizado!');
       onSuccess(numericAmount);
     } catch (err: any) {
-      Alert.alert('Erro', err.response?.data?.error || 'Não foi possível atualizar a caixinha.');
+      crossAlert('Erro', err.response?.data?.error || 'Não foi possível atualizar a caixinha.');
     } finally {
       setLoading(false);
     }

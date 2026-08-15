@@ -6,9 +6,10 @@ import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
-  Alert,
 } from 'react-native';
+import { crossAlert, crossConfirm } from '../utils/alertUtils';
 import { useAuthStore } from '../store/authStore';
+import { useGroupStore } from '../store/groupStore';
 import { fetchUserGroups, type Group } from '../services/dashboardService';
 import { fetchTransactions, deleteTransaction, type Transaction } from '../services/transactionService';
 import { NewTransactionModal } from '../components/NewTransactionModal';
@@ -85,7 +86,7 @@ export function TransactionsScreen() {
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
 
-  const [group, setGroup] = useState<Group | null>(null);
+  const { activeGroup } = useGroupStore();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   
   const [loading, setLoading] = useState(true);
@@ -94,39 +95,19 @@ export function TransactionsScreen() {
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  // 1. Pega o grupo
-  useEffect(() => {
-    loadGroup();
-  }, []);
-
-  async function loadGroup() {
-    try {
-      const groups = await fetchUserGroups();
-      if (groups.length > 0) {
-        setGroup(groups[0]);
-      } else {
-        setError('Nenhum grupo encontrado.');
-        setLoading(false);
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Erro ao carregar o grupo.');
-      setLoading(false);
-    }
-  }
-
   // 2. Busca as transações
   useEffect(() => {
-    if (group) {
+    if (activeGroup) {
       loadTransactions();
     }
-  }, [group, month, year]);
+  }, [activeGroup, month, year]);
 
   async function loadTransactions() {
-    if (!group) return;
+    if (!activeGroup) return;
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchTransactions(group.id, month, year);
+      const data = await fetchTransactions(activeGroup.id, month, year);
       setTransactions(data);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Erro ao carregar transações.');
@@ -136,38 +117,31 @@ export function TransactionsScreen() {
   }
 
   const onRefresh = useCallback(async () => {
-    if (!group) return;
+    if (!activeGroup) return;
     setRefreshing(true);
     try {
-      const data = await fetchTransactions(group.id, month, year);
+      const data = await fetchTransactions(activeGroup.id, month, year);
       setTransactions(data);
     } finally {
       setRefreshing(false);
     }
-  }, [group, month, year]);
+  }, [activeGroup, month, year]);
 
   // --- Deletar ---
-  function handleDelete(id: string) {
-    Alert.alert(
+  async function handleDelete(id: string) {
+    const confirmed = await crossConfirm(
       'Excluir Transação',
-      'Tem certeza que deseja excluir esta transação? Essa ação não pode ser desfeita.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Excluir', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteTransaction(id);
-              // Remove da lista localmente para resposta rápida
-              setTransactions(prev => prev.filter(t => t.id !== id));
-            } catch (err) {
-              Alert.alert('Erro', 'Não foi possível excluir a transação.');
-            }
-          }
-        }
-      ]
+      'Tem certeza que deseja excluir esta transação? Essa ação não pode ser desfeita.'
     );
+
+    if (confirmed) {
+      try {
+        await deleteTransaction(id);
+        setTransactions(prev => prev.filter(t => t.id !== id));
+      } catch (err) {
+        crossAlert('Erro', 'Não foi possível excluir a transação.');
+      }
+    }
   }
 
   // --- Navegação Mês ---
@@ -248,10 +222,10 @@ export function TransactionsScreen() {
       </TouchableOpacity>
 
       {/* Modal */}
-      {group && (
+      {activeGroup && (
         <NewTransactionModal
           visible={modalVisible}
-          groupId={group.id}
+          groupId={activeGroup.id}
           onClose={() => setModalVisible(false)}
           onSuccess={() => {
             setModalVisible(false);

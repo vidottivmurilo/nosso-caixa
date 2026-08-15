@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { crossAlert } from '../utils/alertUtils';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../services/api';
 
@@ -11,7 +12,7 @@ export function LoginScreen() {
 
   async function handleLogin() {
     if (!email || !password) {
-      Alert.alert('Erro', 'Preencha e-mail e senha.');
+      crossAlert('Erro', 'Preencha e-mail e senha.');
       return;
     }
 
@@ -25,7 +26,7 @@ export function LoginScreen() {
       
     } catch (error: any) {
       const message = error.response?.data?.error || 'Erro ao fazer login.';
-      Alert.alert('Erro', message);
+      crossAlert('Erro', message);
     } finally {
       setLoading(false);
     }

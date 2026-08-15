@@ -6,12 +6,13 @@ import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
-  Alert,
   Modal,
   TextInput,
   ScrollView,
 } from 'react-native';
-import { fetchUserGroups, type Group } from '../services/dashboardService';
+import { crossAlert, crossConfirm } from '../utils/alertUtils';
+import { useGroupStore } from '../store/groupStore';
+import { type Group } from '../services/dashboardService';
 import { 
   fetchFixedExpenses, 
   createFixedExpense, 
@@ -29,7 +30,7 @@ function formatBRL(value: number): string {
 }
 
 export function FixedExpensesScreen() {
-  const [group, setGroup] = useState<Group | null>(null);
+  const { activeGroup } = useGroupStore();
   const [expenses, setExpenses] = useState<FixedExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -46,25 +47,14 @@ export function FixedExpensesScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  async function loadInitialData() {
-    try {
-      const groups = await fetchUserGroups();
-      if (groups.length > 0) {
-        const firstGroup = groups[0];
-        setGroup(firstGroup);
-        await loadExpenses(firstGroup.id);
-      } else {
-        setError('Nenhum grupo encontrado.');
-      }
-    } catch (err: any) {
-      setError('Erro ao carregar dados iniciais.');
-    } finally {
+    if (activeGroup) {
+      loadExpenses(activeGroup.id);
+      setLoading(false);
+    } else {
+      setExpenses([]);
       setLoading(false);
     }
-  }
+  }, [activeGroup]);
 
   async function loadExpenses(groupId: string) {
     try {
@@ -76,56 +66,47 @@ export function FixedExpensesScreen() {
   }
 
   const onRefresh = useCallback(async () => {
-    if (!group) return;
+    if (!activeGroup) return;
     setRefreshing(true);
-    await loadExpenses(group.id);
+    await loadExpenses(activeGroup.id);
     setRefreshing(false);
-  }, [group]);
+  }, [activeGroup]);
 
   // --- Ação Principal: Gerar Mês ---
   async function handleGenerateMonth() {
-    if (!group) return;
-    Alert.alert(
+    if (!activeGroup) return;
+
+    const confirmed = await crossConfirm(
       'Gerar Contas do Mês',
-      'Isso vai criar as transações no seu histórico para todas as contas listadas abaixo. Deseja continuar?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Gerar', 
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const now = new Date();
-              await generateMonthExpenses(group.id, now.getMonth() + 1, now.getFullYear());
-              Alert.alert('Sucesso', 'As contas fixas foram lançadas nas suas Transações!');
-            } catch (err) {
-              Alert.alert('Erro', 'Falha ao gerar as contas do mês.');
-            } finally {
-              setLoading(false);
-            }
-          }
-        }
-      ]
+      'Isso vai criar as transações no seu histórico para todas as contas listadas abaixo. Deseja continuar?'
     );
+
+    if (confirmed) {
+      try {
+        setLoading(true);
+        const now = new Date();
+        await generateMonthExpenses(activeGroup.id, now.getMonth() + 1, now.getFullYear());
+        crossAlert('Sucesso', 'As contas fixas foram lançadas nas suas Transações!');
+      } catch (err) {
+        crossAlert('Erro', 'Falha ao gerar as contas do mês.');
+      } finally {
+        setLoading(false);
+      }
+    }
   }
 
   // --- Deletar ---
-  function handleDelete(id: string) {
-    Alert.alert('Excluir Conta', 'Remover esta assinatura/conta fixa?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { 
-        text: 'Excluir', 
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteFixedExpense(id);
-            setExpenses(prev => prev.filter(e => e.id !== id));
-          } catch {
-            Alert.alert('Erro', 'Não foi possível excluir.');
-          }
-        }
+  async function handleDelete(id: string) {
+    const confirmed = await crossConfirm('Excluir Conta', 'Remover esta assinatura/conta fixa?');
+
+    if (confirmed) {
+      try {
+        await deleteFixedExpense(id);
+        setExpenses(prev => prev.filter(e => e.id !== id));
+      } catch {
+        crossAlert('Erro', 'Não foi possível excluir.');
       }
-    ]);
+    }
   }
 
   // --- Modal Cadastro ---
@@ -141,8 +122,8 @@ export function FixedExpensesScreen() {
   }
 
   async function handleSaveNew() {
-    if (!group || !description || !amount || !dayOfMonth || !categoryId) {
-      Alert.alert('Atenção', 'Preencha todos os campos.');
+    if (!activeGroup || !description || !amount || !dayOfMonth || !categoryId) {
+      crossAlert('Atenção', 'Preencha todos os campos.');
       return;
     }
     
@@ -150,14 +131,14 @@ export function FixedExpensesScreen() {
     const day = parseInt(dayOfMonth, 10);
 
     if (isNaN(numericAmount) || isNaN(day) || day < 1 || day > 31) {
-      Alert.alert('Atenção', 'Valores inválidos.');
+      crossAlert('Atenção', 'Valores inválidos.');
       return;
     }
 
     try {
       setIsSubmitting(true);
       await createFixedExpense({
-        group_id: group.id,
+        group_id: activeGroup.id,
         category_id: categoryId,
         amount: numericAmount,
         day_of_month: day,
@@ -168,9 +149,9 @@ export function FixedExpensesScreen() {
       setDescription('');
       setAmount('');
       setDayOfMonth('');
-      await loadExpenses(group.id);
+      await loadExpenses(activeGroup.id);
     } catch (err) {
-      Alert.alert('Erro', 'Não foi possível salvar.');
+      crossAlert('Erro', 'Não foi possível salvar.');
     } finally {
       setIsSubmitting(false);
     }

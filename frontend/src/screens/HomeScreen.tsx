@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useAuthStore } from '../store/authStore';
+import { useGroupStore } from '../store/groupStore';
 import {
   fetchUserGroups,
   fetchDashboardSummary,
@@ -59,6 +60,7 @@ function FinanceCard({ icon, label, value, colorClass }: FinanceCardProps) {
 
 export function HomeScreen() {
   const { user, logout } = useAuthStore();
+  const { activeGroup, setActiveGroup, setUserGroups, loadPersistedGroupId } = useGroupStore();
 
   // Estado do seletor de mês/ano (inicializa com o mês e ano atuais)
   const now = new Date();
@@ -66,30 +68,38 @@ export function HomeScreen() {
   const [year, setYear] = useState(now.getFullYear());
 
   // Estado dos dados do Dashboard
-  const [group, setGroup] = useState<Group | null>(null);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // --- Busca inicial: pega o primeiro grupo do usuário ---
+  // --- Busca inicial: carrega todos os grupos e define o ativo ---
   useEffect(() => {
-    loadGroup();
+    loadPersistedGroupId().then(() => loadGroups());
   }, []);
 
-  async function loadGroup() {
+  async function loadGroups() {
     try {
       setError(null);
       const groups = await fetchUserGroups();
+      setUserGroups(groups);
 
       if (groups.length === 0) {
         setError('Você ainda não faz parte de nenhum grupo.');
+        await setActiveGroup(null);
         setLoading(false);
         return;
       }
 
-      setGroup(groups[0]); // Usa o primeiro grupo encontrado
+      // Lê o estado atual diretamente do store (evita closure stale)
+      const currentState = useGroupStore.getState();
+
+      // Se não tem grupo ativo, define um
+      if (!currentState.activeGroup) {
+        const storedGroup = groups.find(g => g.id === currentState.persistedGroupId);
+        await setActiveGroup(storedGroup || groups[0]);
+      }
     } catch (err: any) {
       const message = err.response?.data?.error || 'Erro ao buscar seus grupos.';
       setError(message);
@@ -97,20 +107,20 @@ export function HomeScreen() {
     }
   }
 
-  // --- Sempre que o grupo, mês ou ano mudar, busca o summary ---
+  // --- Sempre que o grupo ativo, mês ou ano mudar, busca o summary ---
   useEffect(() => {
-    if (group) {
+    if (activeGroup) {
       loadSummary();
     }
-  }, [group, month, year]);
+  }, [activeGroup, month, year]);
 
   async function loadSummary() {
-    if (!group) return;
+    if (!activeGroup) return;
 
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchDashboardSummary(group.id, month, year);
+      const data = await fetchDashboardSummary(activeGroup.id, month, year);
       setSummary(data);
     } catch (err: any) {
       const message = err.response?.data?.error || 'Erro ao carregar o dashboard.';
@@ -122,17 +132,17 @@ export function HomeScreen() {
 
   // --- Pull-to-refresh ---
   const onRefresh = useCallback(async () => {
-    if (!group) return;
+    if (!activeGroup) return;
     setRefreshing(true);
     try {
-      const data = await fetchDashboardSummary(group.id, month, year);
+      const data = await fetchDashboardSummary(activeGroup.id, month, year);
       setSummary(data);
     } catch {
       // Silenciosamente falha no refresh
     } finally {
       setRefreshing(false);
     }
-  }, [group, month, year]);
+  }, [activeGroup, month, year]);
 
   // --- Navegação entre meses ---
   function goToPreviousMonth() {
@@ -165,9 +175,9 @@ export function HomeScreen() {
             <Text className="text-2xl font-bold text-white">
               Olá, {user?.name?.split(' ')[0]}! 👋
             </Text>
-            {group && (
+            {activeGroup && (
               <Text className="text-slate-400 text-sm mt-1">
-                📂 {group.name}
+                📂 {activeGroup.name}
               </Text>
             )}
           </View>
@@ -234,7 +244,7 @@ export function HomeScreen() {
             </Text>
             <TouchableOpacity
               className="mt-6 bg-emerald-500 px-6 py-3 rounded-lg active:bg-emerald-600"
-              onPress={() => group ? loadSummary() : loadGroup()}
+              onPress={() => activeGroup ? loadSummary() : loadGroups()}
             >
               <Text className="text-white font-bold">Tentar novamente</Text>
             </TouchableOpacity>
@@ -279,10 +289,10 @@ export function HomeScreen() {
           </>
         )}
 
-        {group && summary && (
+        {activeGroup && summary && (
           <UpdateSavingsModal
             visible={modalVisible}
-            groupId={group.id}
+            groupId={activeGroup.id}
             currentAmount={summary.savings_amount}
             onClose={() => setModalVisible(false)}
             onSuccess={(newAmount) => {

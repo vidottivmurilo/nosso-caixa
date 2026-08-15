@@ -4,6 +4,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { TransactionsScreen } from '../screens/TransactionsScreen';
 import { FixedExpensesScreen } from '../screens/FixedExpensesScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
+import { GroupsScreen } from '../screens/GroupsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -55,6 +56,15 @@ export function AppStack() {
         options={{
           tabBarIcon: () => null,
           tabBarLabel: 'Meu Perfil',
+          tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold' }
+        }}
+      />
+      <Tab.Screen 
+        name="Groups" 
+        component={GroupsScreen}
+        options={{
+          tabBarIcon: () => null,
+          tabBarLabel: 'Grupos',
           tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold' }
         }}
       />

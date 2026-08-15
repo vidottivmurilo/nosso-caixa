@@ -1,5 +1,10 @@
 import { api } from './api';
+import { type Group } from './dashboardService';
 
+export async function createGroup(name: string): Promise<Group> {
+  const response = await api.post<Group>('/groups', { name });
+  return response.data;
+}
 export interface GroupInvite {
   id: string;
   group_id: string;
@@ -28,18 +33,18 @@ export async function fetchPendingInvites(): Promise<PendingInviteResponse[]> {
 
 /**
  * Aceita um convite de grupo.
- * Endpoint: POST /groups/:inviteId/accept
+ * Endpoint: POST /groups/:groupId/accept
  */
-export async function acceptInvite(inviteId: string): Promise<void> {
-  await api.post(`/groups/${inviteId}/accept`);
+export async function acceptInvite(groupId: string): Promise<void> {
+  await api.post(`/groups/${groupId}/accept`);
 }
 
 /**
  * Recusa um convite de grupo.
- * Endpoint: POST /groups/:inviteId/decline
+ * Endpoint: POST /groups/:groupId/decline
  */
-export async function declineInvite(inviteId: string): Promise<void> {
-  await api.post(`/groups/${inviteId}/decline`);
+export async function declineInvite(groupId: string): Promise<void> {
+  await api.post(`/groups/${groupId}/decline`);
 }
 
 /**
