@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { crossAlert } from '../utils/alertUtils';
+import { crossAlert, crossConfirm } from '../utils/alertUtils';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../services/api';
 
@@ -11,6 +11,20 @@ export function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuthStore();
+
+  async function handleResendCode() {
+    setLoading(true);
+    try {
+      await api.post('/auth/resend-verification', { email });
+      crossAlert('Sucesso!', 'Novo código reenviado para o seu e-mail.');
+      navigation.navigate('VerifyEmail', { email });
+    } catch (error: any) {
+      const message = error.response?.data?.error || 'Erro ao reenviar código.';
+      crossAlert('Erro', message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleLogin() {
     if (!email || !password) {
@@ -27,8 +41,17 @@ export function LoginScreen() {
       await login(token, user);
       
     } catch (error: any) {
+      const status = error.response?.status;
       const message = error.response?.data?.error || 'Erro ao fazer login.';
-      crossAlert('Erro', message);
+      
+      if (status === 403) {
+        const wantsToResend = await crossConfirm('Conta não ativada', message + '\n\nDeseja reenviar o código de ativação?');
+        if (wantsToResend) {
+          handleResendCode();
+        }
+      } else {
+        crossAlert('Erro', message);
+      }
     } finally {
       setLoading(false);
     }

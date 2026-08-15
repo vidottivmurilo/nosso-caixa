@@ -141,4 +141,46 @@ export class AuthController {
             return res.status(400).json({ error: error.issues || 'Erro ao verificar e-mail' });
         }
     }
+
+    static async resendVerification(req: Request, res: Response): Promise<any> {
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                return res.status(400).json({ error: 'E-mail é obrigatório' });
+            }
+
+            const user = await prisma.user.findUnique({ where: { email } });
+
+            if (!user) {
+                return res.status(400).json({ error: 'Usuário não encontrado' });
+            }
+
+            if (user.is_email_verified) {
+                return res.status(400).json({ error: 'Esta conta já foi ativada. Você pode fazer login.' });
+            }
+
+            await prisma.userToken.deleteMany({
+                where: { user_id: user.id }
+            });
+
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            await prisma.userToken.create({
+                data: {
+                    token: code,
+                    user_id: user.id,
+                    expires_at: new Date(Date.now() + 15 * 60 * 1000)
+                }
+            });
+
+            await EmailService.sendVerificationEmail(user.email, code);
+
+            return res.status(200).json({ message: 'Código reenviado com sucesso!' });
+
+        } catch (error) {
+            console.error("ERRO NO REENVIO:", error);
+            return res.status(500).json({ error: 'Erro interno ao reenviar o código' });
+        }
+    }
 }
