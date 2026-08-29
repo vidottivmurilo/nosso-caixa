@@ -8,6 +8,7 @@ import { VerifyEmail } from './pages/VerifyEmail'
 import { Profile } from './pages/Profile'
 import { Groups } from './pages/Groups'
 import { Dashboard } from './pages/Dashboard'
+import { Transactions } from './pages/Transactions'
 import './styles/global.css'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/transactions" element={<Transactions />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/groups" element={<Groups />} />
         </Route>
