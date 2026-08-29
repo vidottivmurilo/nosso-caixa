@@ -17,6 +17,10 @@ export function Groups() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
 
+  const [inviteModalGroupId, setInviteModalGroupId] = useState<string | null>(null)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [isInviting, setIsInviting] = useState(false)
+
   const fetchGroups = async () => {
     try {
       setLoading(true)
@@ -60,6 +64,33 @@ export function Groups() {
     }
   }
 
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inviteModalGroupId || !inviteEmail) return
+    
+    setIsInviting(true)
+    try {
+      const res = await apiFetch(`/groups/${inviteModalGroupId}/invite`, {
+        method: 'POST',
+        body: JSON.stringify({ email: inviteEmail })
+      })
+      const data = await res.json()
+      
+      if (res.ok) {
+        alert('Convite enviado com sucesso!')
+        setInviteModalGroupId(null)
+        setInviteEmail('')
+      } else {
+        alert(data.error || 'Erro ao convidar usuário')
+      }
+    } catch (err) {
+      console.error('Erro ao convidar', err)
+      alert('Erro de conexão ao tentar convidar')
+    } finally {
+      setIsInviting(false)
+    }
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -92,6 +123,12 @@ export function Groups() {
                   Papel: {(g.role || g.my_role) === 'OWNER' ? 'Dono' : 'Membro'}
                 </div>
                 
+                {(g.role || g.my_role) === 'OWNER' && (
+                  <button className={styles.inviteBtn} onClick={() => setInviteModalGroupId(g.id)} style={{ marginBottom: isActive ? 0 : 8 }}>
+                    + Convidar Membro
+                  </button>
+                )}
+
                 {!isActive && (
                   <button className={styles.selectBtn} onClick={() => setCurrentGroup(g.id, g.name)}>
                     Acessar este grupo
@@ -122,6 +159,35 @@ export function Groups() {
               <div className={styles.modalActions}>
                 <button type="button" className={styles.cancelBtn} onClick={() => setIsModalOpen(false)}>Cancelar</button>
                 <button type="submit" className={styles.saveBtn}>Salvar Grupo</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {inviteModalGroupId && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Convidar Membro</h3>
+            <form onSubmit={handleInvite}>
+              <div className={styles.inputGroup}>
+                <label>E-mail do usuário</label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="exemplo@email.com"
+                  autoFocus
+                  required
+                />
+              </div>
+              <div className={styles.modalActions}>
+                <button type="button" onClick={() => { setInviteModalGroupId(null); setInviteEmail(''); }} className={styles.cancelBtn}>
+                  Cancelar
+                </button>
+                <button type="submit" className={styles.submitBtn} disabled={isInviting || !inviteEmail}>
+                  {isInviting ? 'Convidando...' : 'Enviar Convite'}
+                </button>
               </div>
             </form>
           </div>

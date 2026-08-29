@@ -101,6 +101,24 @@
   cursor: pointer;
 }
 
+.inviteBtn {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.inviteBtn:hover {
+  background-color: var(--bg-main);
+  border-color: var(--text-primary);
+}
+
 .emptyState {
   text-align: center;
   padding: 64px 24px;
