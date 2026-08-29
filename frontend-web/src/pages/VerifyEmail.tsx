@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { apiFetch } from '../services/api'
 import styles from './Auth.module.css'
 
 export function VerifyEmail() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialEmail = searchParams.get('email') || ''
 
