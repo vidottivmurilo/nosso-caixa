@@ -52,6 +52,11 @@ export function Transactions() {
   const [txDate, setTxDate] = useState(new Date().toISOString().split('T')[0])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // AI Modal states
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false)
+  const [aiText, setAiText] = useState('')
+  const [isAiSubmitting, setIsAiSubmitting] = useState(false)
+
   const months = [
     { value: 1, label: 'Janeiro' }, { value: 2, label: 'Fevereiro' },
     { value: 3, label: 'Março' }, { value: 4, label: 'Abril' },
@@ -132,6 +137,38 @@ export function Transactions() {
     }
   }
 
+  const handleAiSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!currentGroupId || !aiText.trim()) return
+
+    setIsAiSubmitting(true)
+    try {
+      const response = await apiFetch('/ai/parse-transaction', {
+        method: 'POST',
+        body: JSON.stringify({
+          text: aiText,
+          group_id: currentGroupId
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setIsAiModalOpen(false)
+        setAiText('')
+        loadTransactions() // recarrega a lista com os dados criados pela IA
+        alert(`✨ Sucesso! A IA registrou: ${data.ai_raw_data.description} no valor de ${formatCurrency(data.ai_raw_data.amount)}`)
+      } else {
+        alert(data.error || 'Erro ao processar com a IA')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Erro de conexão ao usar a Inteligência Artificial')
+    } finally {
+      setIsAiSubmitting(false)
+    }
+  }
+
   const handlePrevMonth = () => {
     if (month === 1) { setMonth(12); setYear((y) => y - 1) } 
     else { setMonth((m) => m - 1) }
@@ -194,6 +231,10 @@ export function Transactions() {
             )}
           </div>
 
+          <button className={styles.aiButton} onClick={() => setIsAiModalOpen(true)}>
+            ✨ Inteligência Artificial
+          </button>
+          
           <button className={styles.addButton} onClick={() => setIsModalOpen(true)}>
             + Novo Lançamento
           </button>
@@ -283,6 +324,41 @@ export function Transactions() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isAiModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h2 style={{ marginBottom: 8 }}>✨ Assistente Inteligente</h2>
+            <p className={styles.aiHint}>
+              Digite como se estivesse conversando. A IA vai categorizar e criar o lançamento para você automaticamente!<br/><br/>
+              Ex: <i>"Comprei 50 reais de pão no mercado"</i> ou <i>"Recebi 1500 de salário"</i>.
+            </p>
+            
+            {isAiSubmitting ? (
+              <div className={styles.aiLoading}>
+                <div className={styles.spinner}></div>
+                <p>A Inteligência Artificial está pensando...</p>
+              </div>
+            ) : (
+              <form onSubmit={handleAiSubmit}>
+                <textarea 
+                  className={styles.aiTextArea} 
+                  placeholder="Escreva seu gasto ou ganho aqui..."
+                  value={aiText}
+                  onChange={e => setAiText(e.target.value)}
+                  autoFocus
+                />
+                <div className={styles.modalActions}>
+                  <button type="button" className={styles.cancelButton} onClick={() => setIsAiModalOpen(false)}>Cancelar</button>
+                  <button type="submit" className={styles.aiSubmitButton} disabled={!aiText.trim()}>
+                    Processar
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

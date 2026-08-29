@@ -19,7 +19,9 @@
 
 @media (max-width: 768px) {
   .layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    display: block; /* Remove o grid pra tela toda ser o conteúdo */
+  }
+  .main {
+    padding: 84px 16px 24px 16px; /* Espaço pro mobileHeader fixo de 60px no topo */
   }
 }
