@@ -21,7 +21,10 @@
   .layout {
     display: block; /* Remove o grid pra tela toda ser o conteúdo */
   }
+  .contentArea {
+    padding-top: 60px; /* Empurra todo o conteúdo, incluindo Navbar, para baixo do Header Fixo */
+  }
   .main {
-    padding: 84px 16px 24px 16px; /* Espaço pro mobileHeader fixo de 60px no topo */
+    padding: 16px 16px 24px 16px;
   }
 }
