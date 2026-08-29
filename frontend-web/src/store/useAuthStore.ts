@@ -10,7 +10,9 @@ interface User {
 interface AuthState {
   token: string | null
   user: User | null
+  currentGroupId: string | null
   setAuth: (token: string, user: User) => void
+  setCurrentGroup: (groupId: string) => void
   logout: () => void
 }
 
@@ -19,8 +21,10 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
+      currentGroupId: null,
       setAuth: (token, user) => set({ token, user }),
-      logout: () => set({ token: null, user: null }),
+      setCurrentGroup: (groupId) => set({ currentGroupId: groupId }),
+      logout: () => set({ token: null, user: null, currentGroupId: null }),
     }),
     {
       name: 'auth-storage',

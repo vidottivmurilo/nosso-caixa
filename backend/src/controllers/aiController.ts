@@ -58,11 +58,12 @@ O JSON deve seguir EXATAMENTE esta estrutura:
 
             try {
                 const response = await ai.models.generateContent({
-                    model: 'gemini-3.5-flash',
+                    model: 'gemini-3.7-flash',
                     contents: data.text,
                     config: {
                         systemInstruction: systemPrompt,
-                        temperature: 0.1 // Temperatura baixa para ser estritamente técnico e previsível
+                        temperature: 0.1, // Temperatura baixa para ser estritamente técnico e previsível
+                        responseMimeType: 'application/json'
                     }
                 });
                 aiResponseText = response.text || "";

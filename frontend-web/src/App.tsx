@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { PrivateRoute } from './components/PrivateRoute'
+import { MainLayout } from './components/layout/MainLayout'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { VerifyEmail } from './pages/VerifyEmail'
 import { Profile } from './pages/Profile'
+import { Groups } from './pages/Groups'
 import './styles/global.css'
 
 function App() {
@@ -20,10 +21,11 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         
         {/* Rotas Privadas (Protegidas) */}
-        <Route element={<PrivateRoute />}>
+        <Route element={<MainLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<div style={{ padding: 20 }}>Dashboard Privado</div>} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/groups" element={<Groups />} />
         </Route>
       </Routes>
     </BrowserRouter>
