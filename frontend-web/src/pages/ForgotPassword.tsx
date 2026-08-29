@@ -24,7 +24,7 @@ export function ForgotPassword() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erro ao solicitar recuperação')
+        throw new Error(data.error || data.message || 'Erro ao solicitar recuperação')
       }
 
       setSuccess('Se o e-mail existir, você receberá um link de recuperação.')

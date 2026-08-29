@@ -20,13 +20,17 @@ export function Login() {
     try {
       const response = await apiFetch('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erro ao realizar login')
+        if (response.status === 403) {
+          navigate(`/verify-email?email=${encodeURIComponent(email.trim())}`)
+          return
+        }
+        throw new Error(data.error || data.message || 'Erro ao realizar login')
       }
 
       // Salva o token e o usuário no estado global (Zustand)

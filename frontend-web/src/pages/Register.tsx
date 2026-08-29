@@ -19,17 +19,17 @@ export function Register() {
     try {
       const response = await apiFetch('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email: email.trim(), password }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Erro ao criar conta')
+        throw new Error(data.error || data.message || 'Erro ao criar conta')
       }
 
-      // Poderia logar automaticamente, mas geralmente manda verificar email ou redireciona pro login
-      navigate('/login')
+      // Redireciona para a tela de verificação de e-mail, onde ele colocará o código
+      navigate(`/verify-email?email=${encodeURIComponent(email.trim())}`)
     } catch (err: any) {
       setError(err.message)
     } finally {
