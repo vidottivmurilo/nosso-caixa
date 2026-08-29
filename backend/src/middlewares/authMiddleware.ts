@@ -20,7 +20,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
     }
 
     try {
-        const secret = process.env.JWT_SECRET || '9d5c3f8e7b1a0294c6d8e7b1a0294c6d';
+        const secret = process.env.JWT_SECRET as string;
 
         const decoded = jwt.verify(token, secret) as jwt.JwtPayload;
 

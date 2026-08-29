@@ -36,7 +36,7 @@ export class AuthController {
             });
 
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            
+
             await prisma.userToken.create({
                 data: {
                     token: code,
@@ -80,7 +80,7 @@ export class AuthController {
                 return res.status(401).json({ error: 'Senha incorreta' });
             }
 
-            const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || '9d5c3f8e7b1a0294c6d8e7b1a0294c6d', {
+            const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, {
                 expiresIn: '7d'
             });
 
@@ -165,7 +165,7 @@ export class AuthController {
             });
 
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            
+
             await prisma.userToken.create({
                 data: {
                     token: code,
@@ -206,7 +206,7 @@ export class AuthController {
 
             // Gera e salva novo token de 6 dígitos
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            
+
             await prisma.userToken.create({
                 data: {
                     token: code,
