@@ -6,7 +6,8 @@ import styles from './Groups.module.css'
 interface Group {
   id: string
   name: string
-  role: string
+  role?: string
+  my_role?: string
 }
 
 export function Groups() {
@@ -23,6 +24,12 @@ export function Groups() {
       if (res.ok) {
         const data = await res.json()
         setGroups(data)
+        
+        // Corrige automaticamente se o usuário tiver ID mas não o Nome salvo na sessão
+        const activeGroup = data.find((g: any) => g.id === useAuthStore.getState().currentGroupId)
+        if (activeGroup && !useAuthStore.getState().currentGroupName) {
+          useAuthStore.getState().setCurrentGroup(activeGroup.id, activeGroup.name)
+        }
       }
     } catch (err) {
       console.error('Erro ao buscar grupos', err)
@@ -81,10 +88,12 @@ export function Groups() {
                   <span className={styles.groupName}>{g.name}</span>
                   {isActive && <span className={styles.badge}>Ativo</span>}
                 </div>
-                <div className={styles.role}>Papel: {g.role === 'OWNER' ? 'Dono' : 'Membro'}</div>
+                <div className={styles.role}>
+                  Papel: {(g.role || g.my_role) === 'OWNER' ? 'Dono' : 'Membro'}
+                </div>
                 
                 {!isActive && (
-                  <button className={styles.selectBtn} onClick={() => setCurrentGroup(g.id)}>
+                  <button className={styles.selectBtn} onClick={() => setCurrentGroup(g.id, g.name)}>
                     Acessar este grupo
                   </button>
                 )}

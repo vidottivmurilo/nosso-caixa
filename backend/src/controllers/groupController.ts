@@ -63,7 +63,7 @@ export class GroupController {
                 id: ug.group.id,
                 name: ug.group.name,
                 created_at: ug.group.created_at,
-                my_role: ug.role
+                role: ug.role
             }));
 
             return res.status(200).json(formattedGroups);

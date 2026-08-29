@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore'
 import styles from './Navbar.module.css'
 
 export function Navbar() {
-  const { user, logout, currentGroupId } = useAuthStore()
+  const { user, logout, currentGroupId, currentGroupName } = useAuthStore()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -12,8 +12,7 @@ export function Navbar() {
     navigate('/login')
   }
 
-  // TODO: Fetch the actual group name using currentGroupId from API or Store
-  const groupName = currentGroupId ? 'Grupo Selecionado' : 'Selecione um Grupo'
+  const groupName = currentGroupName || (currentGroupId ? 'Grupo Selecionado' : 'Selecione um Grupo')
 
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : 'U'
 
