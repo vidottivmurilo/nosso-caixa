@@ -1,7 +1,7 @@
 import { useAuthStore } from '../store/useAuthStore'
 
-// TODO: Pode ser movido para .env no futuro (ex: import.meta.env.VITE_API_URL)
-const API_BASE_URL = 'https://nosso-caixa-backend.onrender.com'
+// Lendo a URL da API da variável de ambiente, com fallback de segurança (mas o ideal é sempre definir a env)
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const token = useAuthStore.getState().token
