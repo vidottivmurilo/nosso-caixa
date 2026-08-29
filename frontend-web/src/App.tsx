@@ -7,6 +7,7 @@ import { ResetPassword } from './pages/ResetPassword'
 import { VerifyEmail } from './pages/VerifyEmail'
 import { Profile } from './pages/Profile'
 import { Groups } from './pages/Groups'
+import { Dashboard } from './pages/Dashboard'
 import './styles/global.css'
 
 function App() {
@@ -23,7 +24,7 @@ function App() {
         {/* Rotas Privadas (Protegidas) */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<div style={{ padding: 20 }}>Dashboard Privado</div>} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/groups" element={<Groups />} />
         </Route>
